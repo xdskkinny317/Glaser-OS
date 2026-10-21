@@ -1,0 +1,398 @@
+
+name: Build GLASER OS Neon Cyber
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-glaseros:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Free available build space
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/dotnet
+          df -h
+
+      - name: Install ISO build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git live-build cdebootstrap curl \
+            ca-certificates xorriso squashfs-tools \
+            debian-archive-keyring
+
+      - name: Download official live-image build system
+        run: |
+          git clone --depth 1 \
+            https://gitlab.com/kalilinux/build-scripts/kali-live.git
+
+      - name: Create GLASER OS desktop and tools
+        shell: bash
+        run: |
+          set -e
+          cd kali-live
+
+          mkdir -p kali-config/variant-xfce/package-lists
+          mkdir -p kali-config/common/includes.chroot/usr/local/share/glaseros
+          mkdir -p kali-config/common/includes.chroot/usr/local/bin
+          mkdir -p kali-config/common/includes.chroot/usr/share/applications
+          mkdir -p kali-config/common/includes.chroot/etc/xdg/autostart
+
+          # Real applications installed in the bootable OS.
+          cat > kali-config/variant-xfce/package-lists/glaseros.list.chroot <<'PACKAGES'
+          nmap
+          wireshark
+          tcpdump
+          whois
+          dnsutils
+          curl
+          git
+          python3
+          python3-tk
+          python3-psutil
+          firefox-esr
+          xfce4-terminal
+          xfce4-taskmanager
+          thunar
+          PACKAGES
+
+          # Native GLASER OS desktop application.
+          cat > kali-config/common/includes.chroot/usr/local/share/glaseros/dashboard.py <<'PYTHON'
+          #!/usr/bin/python3
+          import tkinter as tk
+          from tkinter import messagebox
+          import subprocess
+          import shutil
+          import math
+          import time
+          import psutil
+
+          BG = "#070510"
+          PANEL = "#120d22"
+          CYAN = "#00f5ff"
+          PINK = "#ff20c8"
+          PURPLE = "#a855ff"
+          GREEN = "#39ff88"
+          WHITE = "#f3f4ff"
+          MUTED = "#9992b9"
+
+          root = tk.Tk()
+          root.title("GLASER OS | NEON CYBER")
+          root.geometry("1180x790")
+          root.minsize(800, 600)
+          root.configure(bg=BG)
+
+          try:
+              root.state("zoomed")
+          except tk.TclError:
+              pass
+
+          header = tk.Frame(root, bg=BG)
+          header.pack(fill="x", padx=26, pady=(20, 5))
+
+          tk.Label(
+              header, text="GLASER OS",
+              bg=BG, fg=CYAN,
+              font=("DejaVu Sans", 31, "bold")
+          ).pack(side="left")
+
+          tk.Label(
+              header, text="  //  NEON CYBER",
+              bg=BG, fg=PINK,
+              font=("DejaVu Sans", 17, "bold")
+          ).pack(side="left", padx=8, pady=(10, 0))
+
+          tk.Label(
+              root,
+              text="NATIVE CYBER OPERATIONS CENTER  /  BUILD 0.1",
+              bg=BG, fg=PURPLE,
+              font=("DejaVu Sans Mono", 10)
+          ).pack(anchor="w", padx=32, pady=(5, 16))
+
+          stats = tk.Frame(root, bg=BG)
+          stats.pack(fill="x", padx=24)
+
+          def metric(title, color):
+              card = tk.Frame(
+                  stats, bg=PANEL,
+                  highlightbackground=color,
+                  highlightthickness=1
+              )
+              card.pack(side="left", expand=True, fill="both", padx=5)
+
+              tk.Label(
+                  card, text=title,
+                  bg=PANEL, fg=color,
+                  font=("DejaVu Sans Mono", 10, "bold")
+              ).pack(anchor="w", padx=13, pady=(12, 3))
+
+              value = tk.Label(
+                  card, text="Reading...",
+                  bg=PANEL, fg=WHITE,
+                  font=("DejaVu Sans", 23, "bold")
+              )
+              value.pack(anchor="w", padx=13, pady=(0, 12))
+              return value
+
+          cpu_value = metric("CPU LOAD", CYAN)
+          memory_value = metric("MEMORY", PINK)
+          network_value = metric("NETWORK", GREEN)
+
+          body = tk.Frame(root, bg=BG)
+          body.pack(fill="both", expand=True, padx=28, pady=20)
+
+          left = tk.Frame(body, bg=BG)
+          left.pack(side="left", fill="both", expand=True)
+
+          tk.Label(
+              left, text="CYBER TOOL DECK",
+              bg=BG, fg=CYAN,
+              font=("DejaVu Sans Mono", 14, "bold")
+          ).pack(anchor="w", pady=(0, 12))
+
+          def launch(title, command):
+              executable = command[0]
+
+              if not shutil.which(executable):
+                  messagebox.showwarning(
+                      title,
+                      "This application is not installed in this build."
+                  )
+                  return
+
+              try:
+                  subprocess.Popen(command)
+              except Exception as error:
+                  messagebox.showerror(title, str(error))
+
+          tools = [
+              ("WIRESHARK", "Packet inspection",
+               ["wireshark"], CYAN),
+
+              ("NMAP HELP", "Network discovery tool",
+               ["xfce4-terminal", "--hold", "-e", "nmap --help"], PINK),
+
+              ("TERMINAL", "Native Linux command line",
+               ["xfce4-terminal"], PURPLE),
+
+              ("FILE MANAGER", "Browse system files",
+               ["thunar"], GREEN),
+
+              ("WEB BROWSER", "Firefox web browser",
+               ["firefox-esr"], CYAN),
+
+              ("SYSTEM MONITOR", "View running processes",
+               ["xfce4-taskmanager"], PINK),
+          ]
+
+          for title, description, command, color in tools:
+              button = tk.Button(
+                  left,
+                  text="  >  " + title + "\\n     " + description,
+                  command=lambda t=title, c=command: launch(t, c),
+                  anchor="w",
+                  justify="left",
+                  bg=PANEL,
+                  fg=color,
+                  activebackground="#30204a",
+                  activeforeground=WHITE,
+                  relief="flat",
+                  font=("DejaVu Sans Mono", 10, "bold"),
+                  padx=13,
+                  pady=13,
+                  cursor="hand2"
+              )
+              button.pack(fill="x", pady=4)
+
+          right = tk.Frame(
+              body, bg=PANEL,
+              highlightbackground=PURPLE,
+              highlightthickness=1,
+              padx=14, pady=14
+          )
+          right.pack(side="right", fill="both", padx=(18, 0))
+
+          tk.Label(
+              right, text="LIVE SYSTEM ACTIVITY",
+              bg=PANEL, fg=GREEN,
+              font=("DejaVu Sans Mono", 11, "bold")
+          ).pack(anchor="w")
+
+          graph = tk.Canvas(
+              right, width=300, height=200,
+              bg="#090715", highlightthickness=0
+          )
+          graph.pack(fill="both", expand=True, pady=12)
+
+          tk.Label(
+              right, text="GLASER NETWORK",
+              bg=PANEL, fg=CYAN,
+              font=("DejaVu Sans Mono", 12, "bold")
+          ).pack(anchor="w", pady=(8, 5))
+
+          tk.Label(
+              right,
+              text=(
+                  "Native OS dashboard: ACTIVE\\n"
+                  "Local system metrics: ACTIVE\\n"
+                  "Peer discovery: NOT IMPLEMENTED\\n"
+                  "Custom routing: NOT IMPLEMENTED"
+              ),
+              bg=PANEL, fg=WHITE,
+              justify="left",
+              font=("DejaVu Sans Mono", 9)
+          ).pack(anchor="w")
+
+          tk.Label(
+              root,
+              text="GLASER OS  //  AUTHORIZED SECURITY TESTING ONLY",
+              bg=BG, fg=PURPLE,
+              font=("DejaVu Sans Mono", 9)
+          ).pack(pady=(0, 14))
+
+          previous = psutil.net_io_counters()
+          phase = 0
+          started = time.time()
+
+          def refresh():
+              global previous, phase
+
+              cpu = psutil.cpu_percent(interval=None)
+              memory = psutil.virtual_memory().percent
+              current = psutil.net_io_counters()
+
+              elapsed = max(0.01, time.time() - started)
+              sent = max(0, current.bytes_sent - previous.bytes_sent)
+              received = max(0, current.bytes_recv - previous.bytes_recv)
+
+              # Actual cumulative network counters, sampled each refresh.
+              network_value.config(
+                  text="↑{} ↓{} KB/s".format(
+                      int(sent / 1024), int(received / 1024)
+                  )
+              )
+              cpu_value.config(text=f"{cpu:.0f}%")
+              memory_value.config(text=f"{memory:.0f}%")
+
+              previous = current
+
+              width = max(220, graph.winfo_width())
+              height = max(130, graph.winfo_height())
+              graph.delete("all")
+
+              for x in range(0, width, 25):
+                  graph.create_line(
+                      x, 0, x, height, fill="#241b39"
+                  )
+
+              for y in range(0, height, 25):
+                  graph.create_line(
+                      0, y, width, y, fill="#241b39"
+                  )
+
+              points = []
+              for x in range(width):
+                  y = height / 2
+                  y += 28 * math.sin(x * 0.045 + phase)
+                  y += 12 * math.sin(x * 0.11 - phase * 1.4)
+                  points.extend([x, y])
+
+              graph.create_line(
+                  *points, fill=CYAN, width=2, smooth=True
+              )
+
+              phase += 0.14
+              root.after(500, refresh)
+
+          psutil.cpu_percent(interval=None)
+          refresh()
+          root.mainloop()
+          PYTHON
+
+          # Native command to launch the dashboard.
+          cat > kali-config/common/includes.chroot/usr/local/bin/glaseros-dashboard <<'LAUNCHER'
+          #!/bin/sh
+          exec /usr/bin/python3 /usr/local/share/glaseros/dashboard.py
+          LAUNCHER
+
+          chmod +x \
+            kali-config/common/includes.chroot/usr/local/bin/glaseros-dashboard \
+            kali-config/common/includes.chroot/usr/local/share/glaseros/dashboard.py
+
+          # Application menu entry.
+          cat > kali-config/common/includes.chroot/usr/share/applications/glaseros-dashboard.desktop <<'DESKTOP'
+          [Desktop Entry]
+          Name=GLASER OS Neon Cyber Center
+          Comment=Native GLASER OS desktop dashboard
+          Exec=/usr/local/bin/glaseros-dashboard
+          Icon=utilities-terminal
+          Type=Application
+          Terminal=false
+          Categories=System;Security;
+          DESKTOP
+
+          # Start the dashboard automatically in the desktop session.
+          cat > kali-config/common/includes.chroot/etc/xdg/autostart/glaseros.desktop <<'AUTOSTART'
+          [Desktop Entry]
+          Type=Application
+          Name=GLASER OS Neon Cyber Center
+          Comment=Start the GLASER OS desktop
+          Exec=/usr/local/bin/glaseros-dashboard
+          Terminal=false
+          AUTOSTART
+
+          # Brand the local console and host name.
+          mkdir -p kali-config/common/includes.chroot/etc
+          cat > kali-config/common/includes.chroot/etc/issue <<'ISSUE'
+          GLASER OS // NEON CYBER
+          Authorized users only.
+          ISSUE
+
+      - name: Build bootable GLASER OS ISO
+        run: |
+          cd kali-live
+          ./build.sh \
+            --verbose \
+            --variant xfce \
+            --arch amd64 \
+            --hostname glaseros \
+            --version 0.1
+
+      - name: Prepare GLASER OS download
+        shell: bash
+        run: |
+          set -e
+          mkdir -p kali-live/dist
+
+          ISO="$(find kali-live/output -maxdepth 1 -type f -name '*.iso' -print -quit)"
+
+          if [ -z "$ISO" ]; then
+            echo "ERROR: The build finished without an ISO."
+            find kali-live -maxdepth 3 -type f -name '*.iso' -print
+            exit 1
+          fi
+
+          cp "$ISO" kali-live/dist/glaseros-neon-cyber-amd64.iso
+          sha256sum kali-live/dist/glaseros-neon-cyber-amd64.iso \
+            > kali-live/dist/SHA256SUMS.txt
+          ls -lh kali-live/dist
+
+      - name: Upload bootable ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: GLASER-OS-Neon-Cyber-ISO
+          path: |
+            kali-live/dist/glaseros-neon-cyber-amd64.iso
+            kali-live/dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 7
