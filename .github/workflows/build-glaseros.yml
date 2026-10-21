@@ -12,41 +12,20 @@ permissions:
 
 jobs:
   build:
-    name: Build bootable GLASER OS ISO
+    name: Build GLASER OS ISO
     runs-on: ubuntu-24.04
     timeout-minutes: 360
 
     steps:
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/local/lib/android
-          df -h /
-
-      - name: Install build dependencies
+      - name: Install Git
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            git \
-            live-build \
-            cdebootstrap \
-            curl \
-            ca-certificates \
-            xorriso \
-            squashfs-tools \
-            debian-archive-keyring \
-            rsync \
-            dosfstools \
-            mtools \
-            debootstrap
+          sudo apt-get install -y git
 
       - name: Download Kali live-build framework
         run: |
           git clone --depth 1 \
             https://gitlab.com/kalilinux/build-scripts/kali-live.git
-          cd kali-live
-          chmod +x build.sh
 
       - name: Configure GLASER OS packages
         run: |
@@ -72,23 +51,20 @@ jobs:
           xterm
           EOF
 
-      - name: Create native GLASER OS desktop
+      - name: Create GLASER OS desktop dashboard
         run: |
           cd kali-live
 
-          APPDIR="kali-config/common/includes.chroot/usr/local/share/glaseros"
-          BINDIR="kali-config/common/includes.chroot/usr/local/bin"
-          DESKTOPDIR="kali-config/common/includes.chroot/usr/share/applications"
-          AUTOSTARTDIR="kali-config/common/includes.chroot/etc/xdg/autostart"
+          APP="kali-config/common/includes.chroot"
+          mkdir -p "$APP/usr/local/share/glaseros"
+          mkdir -p "$APP/usr/local/bin"
+          mkdir -p "$APP/usr/share/applications"
+          mkdir -p "$APP/etc/xdg/autostart"
 
-          mkdir -p "$APPDIR" "$BINDIR" "$DESKTOPDIR" "$AUTOSTARTDIR"
-
-          cat > "$APPDIR/dashboard.py" <<'PYTHON'
+          cat > "$APP/usr/local/share/glaseros/dashboard.py" <<'PYTHON'
           import tkinter as tk
-          from tkinter import messagebox
           import subprocess
           import shutil
-          import os
           import time
 
           try:
@@ -98,274 +74,281 @@ jobs:
 
           BG = "#080b12"
           PANEL = "#101827"
-          NEON = "#00f5ff"
+          CYAN = "#00f5ff"
           GREEN = "#39ff88"
-          TEXT = "#e8faff"
+          WHITE = "#e8faff"
           MUTED = "#8aa4b5"
 
           root = tk.Tk()
-          root.title("GLASER OS | NEON CYBER")
-          root.geometry("1100x720")
-          root.minsize(800, 560)
+          root.title("GLASER OS - NEON CYBER")
+          root.geometry("1050x700")
+          root.minsize(780, 520)
           root.configure(bg=BG)
 
-          def launch(command):
-              executable = command[0]
-              if shutil.which(executable):
-                  try:
-                      subprocess.Popen(command)
-                  except Exception as exc:
-                      messagebox.showerror("Launch error", str(exc))
-              else:
-                  messagebox.showwarning(
-                      "Application unavailable",
-                      executable + " is not installed or is not in PATH."
-                  )
-
-          header = tk.Frame(root, bg=BG)
-          header.pack(fill="x", padx=28, pady=(22, 10))
-
           tk.Label(
-              header, text="GLASER", bg=BG, fg=NEON,
+              root, text="GLASER OS", bg=BG, fg=CYAN,
               font=("TkDefaultFont", 30, "bold")
-          ).pack(side="left")
+          ).pack(anchor="w", padx=30, pady=(25, 0))
 
           tk.Label(
-              header, text="OS  /  NEON CYBER",
-              bg=BG, fg=GREEN, font=("TkDefaultFont", 13, "bold")
-          ).pack(side="left", padx=18, pady=(12, 0))
-
-          tk.Label(
-              root,
-              text="YOUR SYSTEM. YOUR NETWORK. YOUR TOOLS.",
-              bg=BG, fg=MUTED, font=("TkDefaultFont", 11)
-          ).pack(anchor="w", padx=32, pady=(0, 18))
+              root, text="NEON CYBER  |  YOUR SYSTEM. YOUR NETWORK.",
+              bg=BG, fg=GREEN, font=("TkDefaultFont", 11, "bold")
+          ).pack(anchor="w", padx=32, pady=(5, 20))
 
           stats = tk.Frame(root, bg=BG)
-          stats.pack(fill="x", padx=24, pady=4)
+          stats.pack(fill="x", padx=25)
 
-          def stat_card(title):
-              card = tk.Frame(stats, bg=PANEL, padx=18, pady=15)
-              card.pack(side="left", expand=True, fill="x", padx=5)
+          def make_stat(title):
+              panel = tk.Frame(stats, bg=PANEL, padx=18, pady=15)
+              panel.pack(side="left", expand=True, fill="x", padx=5)
               tk.Label(
-                  card, text=title, bg=PANEL, fg=MUTED,
-                  font=("TkDefaultFont", 10, "bold")
+                  panel, text=title, bg=PANEL, fg=MUTED
               ).pack(anchor="w")
               value = tk.Label(
-                  card, text="Reading...", bg=PANEL, fg=NEON,
-                  font=("TkDefaultFont", 22, "bold")
+                  panel, text="Starting...", bg=PANEL, fg=CYAN,
+                  font=("TkDefaultFont", 20, "bold")
               )
               value.pack(anchor="w", pady=(8, 0))
               return value
 
-          cpu_value = stat_card("CPU LOAD")
-          ram_value = stat_card("MEMORY")
-          net_value = stat_card("NETWORK")
-
-          section = tk.Frame(root, bg=BG)
-          section.pack(fill="x", padx=30, pady=(26, 10))
+          cpu = make_stat("CPU USAGE")
+          memory = make_stat("MEMORY USAGE")
+          network = make_stat("NETWORK TRAFFIC")
 
           tk.Label(
-              section, text="CYBER TOOLKIT", bg=BG, fg=TEXT,
+              root, text="SYSTEM TOOLKIT", bg=BG, fg=WHITE,
               font=("TkDefaultFont", 16, "bold")
-          ).pack(anchor="w", pady=(0, 12))
+          ).pack(anchor="w", padx=30, pady=(28, 12))
 
-          tools_frame = tk.Frame(root, bg=BG)
-          tools_frame.pack(fill="x", padx=24)
+          grid = tk.Frame(root, bg=BG)
+          grid.pack(fill="x", padx=25)
 
-          def tool_button(title, description, command):
-              frame = tk.Frame(
-                  tools_frame, bg=PANEL, padx=14, pady=13,
-                  highlightbackground="#183b4b", highlightthickness=1
+          def launch(program, args=None):
+              if shutil.which(program):
+                  try:
+                      subprocess.Popen([program] + (args or []))
+                  except Exception as exc:
+                      status.config(text=f"Launch error: {exc}")
+              else:
+                  status.config(text=f"{program} is not installed.")
+
+          def add_tool(title, description, callback):
+              card = tk.Frame(
+                  grid, bg=PANEL, padx=15, pady=15,
+                  highlightbackground="#174253",
+                  highlightthickness=1
               )
-              frame.pack(side="left", expand=True, fill="both", padx=5, pady=5)
-
+              card.pack(
+                  side="left", expand=True, fill="both",
+                  padx=5, pady=5
+              )
               tk.Label(
-                  frame, text=title, bg=PANEL, fg=NEON,
+                  card, text=title, bg=PANEL, fg=CYAN,
                   font=("TkDefaultFont", 13, "bold")
               ).pack(anchor="w")
-
               tk.Label(
-                  frame, text=description, bg=PANEL, fg=MUTED,
-                  wraplength=180, justify="left",
-                  font=("TkDefaultFont", 9)
-              ).pack(anchor="w", pady=8)
-
+                  card, text=description, bg=PANEL, fg=MUTED,
+                  wraplength=180, justify="left"
+              ).pack(anchor="w", pady=10)
               tk.Button(
-                  frame, text="LAUNCH", command=command,
-                  bg="#123443", fg=TEXT, activebackground=NEON,
-                  activeforeground=BG, relief="flat",
-                  padx=10, pady=7, cursor="hand2"
-              ).pack(anchor="w", pady=(4, 0))
-
-          tool_button(
-              "TERMINAL", "Run Linux commands and scripts.",
-              lambda: launch(["xfce4-terminal"])
-          )
-          tool_button(
-              "NETWORK SCAN", "Inspect devices on networks you own or are authorized to test.",
-              lambda: launch(["xfce4-terminal", "--hold", "-e", "nmap"])
-          )
-          tool_button(
-              "WIRESHARK", "Analyze network traffic with permission.",
-              lambda: launch(["wireshark"])
-          )
-          tool_button(
-              "WEB BROWSER", "Open the web.",
-              lambda: launch(["firefox-esr"])
-          )
-
-          tools_frame2 = tk.Frame(root, bg=BG)
-          tools_frame2.pack(fill="x", padx=24)
-
-          def second_button(title, description, command):
-              frame = tk.Frame(
-                  tools_frame2, bg=PANEL, padx=14, pady=13,
-                  highlightbackground="#183b4b", highlightthickness=1
-              )
-              frame.pack(side="left", expand=True, fill="both", padx=5, pady=5)
-
-              tk.Label(
-                  frame, text=title, bg=PANEL, fg=GREEN,
-                  font=("TkDefaultFont", 12, "bold")
+                  card, text="OPEN", command=callback,
+                  bg="#123443", fg=WHITE, relief="flat",
+                  padx=12, pady=7
               ).pack(anchor="w")
 
+          add_tool(
+              "TERMINAL", "Run Linux commands.",
+              lambda: launch("xfce4-terminal")
+          )
+          add_tool(
+              "NETWORK SCAN", "Scan networks you own or have permission to test.",
+              lambda: launch("xfce4-terminal", ["--hold", "-e", "nmap"])
+          )
+          add_tool(
+              "WIRESHARK", "Inspect authorized network traffic.",
+              lambda: launch("wireshark")
+          )
+          add_tool(
+              "WEB BROWSER", "Browse the web.",
+              lambda: launch("firefox-esr")
+          )
+
+          grid2 = tk.Frame(root, bg=BG)
+          grid2.pack(fill="x", padx=25)
+
+          def add_second(title, description, callback):
+              card = tk.Frame(
+                  grid2, bg=PANEL, padx=15, pady=12,
+                  highlightbackground="#174253",
+                  highlightthickness=1
+              )
+              card.pack(
+                  side="left", expand=True, fill="both",
+                  padx=5, pady=5
+              )
               tk.Label(
-                  frame, text=description, bg=PANEL, fg=MUTED,
-                  wraplength=180, justify="left",
-                  font=("TkDefaultFont", 9)
+                  card, text=title, bg=PANEL, fg=GREEN,
+                  font=("TkDefaultFont", 12, "bold")
+              ).pack(anchor="w")
+              tk.Label(
+                  card, text=description, bg=PANEL, fg=MUTED,
+                  wraplength=180, justify="left"
               ).pack(anchor="w", pady=8)
-
               tk.Button(
-                  frame, text="OPEN", command=command,
-                  bg="#17352b", fg=TEXT, activebackground=GREEN,
-                  activeforeground=BG, relief="flat",
-                  padx=10, pady=7, cursor="hand2"
-              ).pack(anchor="w", pady=(4, 0))
+                  card, text="OPEN", command=callback,
+                  bg="#17352b", fg=WHITE, relief="flat",
+                  padx=12, pady=6
+              ).pack(anchor="w")
 
-          second_button(
-              "FILE MANAGER", "Browse files and folders.",
-              lambda: launch(["thunar"])
+          add_second(
+              "FILES", "Browse files and folders.",
+              lambda: launch("thunar")
           )
-          second_button(
-              "SYSTEM MONITOR", "View running processes and system load.",
-              lambda: launch(["xfce4-taskmanager"])
+          add_second(
+              "SYSTEM MONITOR", "Inspect running processes.",
+              lambda: launch("xfce4-taskmanager")
           )
-          second_button(
-              "NETWORK INFO", "View this computer's network interfaces.",
-              lambda: launch(["xfce4-terminal", "--hold", "-e", "ip address"])
+          add_second(
+              "NETWORK INFO", "View network interfaces.",
+              lambda: launch("xfce4-terminal", ["--hold", "-e", "ip", "address"])
           )
-          second_button(
-              "DNS LOOKUP", "Look up a domain using the system resolver.",
-              lambda: launch(["xfce4-terminal", "--hold", "-e", "bash"])
+          add_second(
+              "DNS TOOLS", "Open a terminal for DNS lookups.",
+              lambda: launch("xfce4-terminal")
           )
 
           status = tk.Label(
-              root, text="GLASER OS | SYSTEM INITIALIZING",
-              bg=BG, fg=GREEN, font=("TkDefaultFont", 10)
+              root, text="GLASER OS | INITIALIZING",
+              bg=BG, fg=GREEN
           )
-          status.pack(anchor="w", padx=32, pady=(18, 8))
+          status.pack(anchor="w", padx=32, pady=(18, 4))
 
-          footer = tk.Label(
+          tk.Label(
               root, text="AUTHORIZED SECURITY TESTING ONLY",
-              bg=BG, fg=MUTED, font=("TkDefaultFont", 9)
-          )
-          footer.pack(anchor="w", padx=32, pady=(0, 14))
+              bg=BG, fg=MUTED
+          ).pack(anchor="w", padx=32, pady=(0, 15))
 
-          last_net = None
+          previous = None
 
           def refresh():
-              global last_net
+              global previous
               try:
                   if psutil:
-                      cpu_value.config(text=f"{psutil.cpu_percent()}%")
-                      mem = psutil.virtual_memory()
-                      ram_value.config(text=f"{mem.percent}%")
-                      net = psutil.net_io_counters()
-                      if last_net is None:
-                          net_value.config(text="Monitoring")
-                      else:
-                          total = (
-                              net.bytes_sent - last_net.bytes_sent
-                              + net.bytes_recv - last_net.bytes_recv
-                          )
-                          net_value.config(text=f"{max(total, 0) // 1024} KB")
-                      last_net = net
-                      status.config(
-                          text="GLASER OS | LIVE SYSTEM MONITORING | "
-                               + time.strftime("%H:%M:%S")
+                      cpu.config(text=f"{psutil.cpu_percent()}%")
+                      memory.config(
+                          text=f"{psutil.virtual_memory().percent}%"
                       )
-                  else:
-                      status.config(text="GLASER OS | SYSTEM MONITORING UNAVAILABLE")
+                      current = psutil.net_io_counters()
+                      if previous is None:
+                          network.config(text="Monitoring")
+                      else:
+                          amount = (
+                              current.bytes_sent - previous.bytes_sent
+                              + current.bytes_recv - previous.bytes_recv
+                          )
+                          network.config(text=f"{max(0, amount)//1024} KB")
+                      previous = current
+                      status.config(
+                          text="GLASER OS | LIVE | "
+                          + time.strftime("%H:%M:%S")
+                      )
               except Exception:
-                  status.config(text="GLASER OS | MONITOR UPDATE FAILED")
+                  status.config(text="GLASER OS | MONITOR UNAVAILABLE")
               root.after(1500, refresh)
 
           refresh()
           root.mainloop()
           PYTHON
 
-          cat > "$BINDIR/glaseros-dashboard" <<'SH'
+          cat > "$APP/usr/local/bin/glaseros-dashboard" <<'EOF'
           #!/bin/sh
           exec python3 /usr/local/share/glaseros/dashboard.py
-          SH
-          chmod +x "$BINDIR/glaseros-dashboard"
+          EOF
 
-          cat > "$DESKTOPDIR/glaseros-dashboard.desktop" <<'DESKTOP'
+          chmod +x "$APP/usr/local/bin/glaseros-dashboard"
+
+          cat > "$APP/usr/share/applications/glaseros-dashboard.desktop" <<'EOF'
           [Desktop Entry]
-          Version=1.0
           Type=Application
           Name=GLASER OS Dashboard
-          Comment=GLASER OS Neon Cyber desktop dashboard
+          Comment=Neon Cyber System Dashboard
           Exec=/usr/local/bin/glaseros-dashboard
           Icon=utilities-terminal
           Terminal=false
           Categories=System;Security;
-          DESKTOP
+          EOF
 
-          cat > "$AUTOSTARTDIR/glaseros.desktop" <<'AUTOSTART'
+          cat > "$APP/etc/xdg/autostart/glaseros.desktop" <<'EOF'
           [Desktop Entry]
           Type=Application
           Name=GLASER OS Dashboard
           Exec=/usr/local/bin/glaseros-dashboard
           Terminal=false
-          AUTOSTART
+          EOF
 
-          mkdir -p kali-config/common/includes.chroot/etc
-          cat > kali-config/common/includes.chroot/etc/issue <<'ISSUE'
+          cat > "$APP/etc/issue" <<'EOF'
 
           ==========================================
-                    GLASER OS - NEON CYBER
+                 GLASER OS - NEON CYBER
           ==========================================
-          Custom live Linux desktop and cyber toolkit
-          Use security tools only with authorization.
+          Custom bootable Linux desktop
+          Authorized security testing only.
           ==========================================
 
-          ISSUE
+          EOF
 
-      - name: Build bootable GLASER OS ISO
+      - name: Build ISO inside Kali Linux container
         run: |
-          cd kali-live
-          sudo ./build.sh --variant xfce --arch amd64 --hostname glaseros --version 0.1
+          docker pull kalilinux/kali-rolling
 
-      - name: Locate and prepare ISO
+          docker run --rm --privileged \
+            -v "$GITHUB_WORKSPACE/kali-live:/work" \
+            -w /work \
+            kalilinux/kali-rolling \
+            bash -lc '
+              set -eux
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                live-build \
+                cdebootstrap \
+                debootstrap \
+                sudo \
+                git \
+                curl \
+                ca-certificates \
+                xorriso \
+                squashfs-tools \
+                kali-archive-keyring \
+                debian-archive-keyring \
+                rsync \
+                dosfstools \
+                mtools
+              echo "Installed live-build version:"
+              dpkg-query -W live-build
+              ./build.sh --variant xfce --arch amd64 --hostname glaseros --version 0.1
+            '
+
+      - name: Find and prepare bootable ISO
         run: |
           mkdir -p dist
-          ISO="$(find kali-live -type f -name '*.iso' -not -path '*/dist/*' -print -quit)"
+
+          ISO="$(find kali-live -type f -name '*.iso' \
+            -not -path '*/dist/*' -print -quit)"
 
           if [ -z "$ISO" ]; then
-            echo "ERROR: Build finished but no ISO file was found."
-            echo "Files generated by the build:"
+            echo "ERROR: No ISO was generated."
+            echo "Build output files:"
             find kali-live -maxdepth 4 -type f | head -200
             exit 1
           fi
 
-          echo "Found ISO: $ISO"
-          cp "$ISO" dist/glaseros-neon-cyber-amd64.iso
-          sha256sum dist/glaseros-neon-cyber-amd64.iso > dist/SHA256SUMS.txt
+          cp "$ISO" dist/GLASER-OS-Neon-Cyber-amd64.iso
+          sha256sum dist/GLASER-OS-Neon-Cyber-amd64.iso \
+            > dist/SHA256SUMS.txt
+
           ls -lh dist/
 
-      - name: Upload bootable GLASER OS
+      - name: Upload GLASER OS ISO
         uses: actions/upload-artifact@v4
         with:
           name: GLASER-OS-Neon-Cyber-ISO
