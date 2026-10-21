@@ -1,0 +1,989 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#05030d">
+<title>GLASER OS | NEON CYBER</title>
+
+<style>
+:root {
+  --bg: #05030d;
+  --panel: #100c20;
+  --cyan: #00f5ff;
+  --pink: #ff00bf;
+  --purple: #a855ff;
+  --green: #39ff88;
+  --white: #f5f7ff;
+  --muted: #9893b5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--white);
+  background: var(--bg);
+  font-family: "Segoe UI", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background:
+    radial-gradient(ellipse at 15% 15%, #46108055, transparent 42%),
+    radial-gradient(ellipse at 85% 25%, #004b7955, transparent 42%),
+    linear-gradient(150deg, #05030d, #0b071a, #05030d);
+}
+
+#particles {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.07;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    #a8baff 4px
+  );
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 19px 5%;
+  border-bottom: 1px solid #302447;
+  background: #080512dd;
+  backdrop-filter: blur(15px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--cyan);
+  border-radius: 10px;
+  color: var(--cyan);
+  font-size: 28px;
+  font-weight: 900;
+  box-shadow: 0 0 18px #00f5ff66,
+              inset 0 0 14px #00f5ff22;
+  animation: logoPulse 2s infinite alternate;
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 3px;
+}
+
+.brand-subtitle {
+  margin-top: 5px;
+  color: var(--muted);
+  font: 10px monospace;
+  letter-spacing: 2px;
+}
+
+.status {
+  color: var(--green);
+  font: 11px monospace;
+  letter-spacing: 1px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green);
+  animation: blink 1.2s infinite;
+}
+
+main {
+  width: min(1400px, 94%);
+  margin: auto;
+}
+
+/* NEON GLASER OS BANNER */
+
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 70px 10px 40px;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  width: 80%;
+  height: 160px;
+  top: 50px;
+  left: 10%;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #00f5ff18,
+    #ff00bf22,
+    transparent
+  );
+  filter: blur(30px);
+  animation: bannerGlow 5s ease-in-out infinite alternate;
+}
+
+.eyebrow {
+  color: var(--cyan);
+  font: 12px monospace;
+  letter-spacing: 5px;
+  text-shadow: 0 0 12px var(--cyan);
+}
+
+.hero h1 {
+  position: relative;
+  margin: 24px 0 15px;
+  font-size: clamp(45px, 10vw, 120px);
+  line-height: 1.05;
+  font-weight: 1000;
+  letter-spacing: clamp(1px, 1vw, 10px);
+  color: #fff;
+  text-transform: uppercase;
+  -webkit-text-stroke: 1px #b9ffff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 12px var(--cyan),
+    0 0 28px var(--cyan),
+    0 0 55px #0077ff,
+    0 0 95px #a000ff;
+  animation: neonFlicker 3s ease-in-out infinite alternate;
+}
+
+.hero h1::after {
+  content: "GLASER OS";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: var(--pink);
+  filter: blur(22px);
+  opacity: 0.8;
+  animation: pinkPulse 4s infinite alternate;
+}
+
+.hero-description {
+  color: #c4bfdc;
+  font-size: 14px;
+  letter-spacing: 3px;
+}
+
+.banner-line {
+  width: min(520px, 80%);
+  height: 2px;
+  margin: 28px auto;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cyan),
+    var(--pink),
+    transparent
+  );
+  box-shadow: 0 0 18px var(--cyan);
+  animation: linePulse 2s infinite alternate;
+}
+
+.hero-info {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 25px;
+  color: var(--muted);
+  font: 11px monospace;
+}
+
+.hero-info strong {
+  color: var(--green);
+  font-weight: normal;
+}
+
+/* GENERAL PANELS */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 25px 0 15px;
+  color: var(--cyan);
+  font: 12px monospace;
+  letter-spacing: 2px;
+}
+
+.section-title::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, #00f5ff66, transparent);
+}
+
+.section-title small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #302747;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #151027ee, #0b0818f5);
+  box-shadow: 0 10px 35px #0005;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+
+.panel:hover {
+  border-color: #00f5ff99;
+  transform: translateY(-3px);
+}
+
+.metric {
+  padding: 20px;
+}
+
+.metric-label {
+  color: var(--muted);
+  font: 11px monospace;
+  letter-spacing: 1px;
+}
+
+.metric-value {
+  margin: 13px 0;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.cyan { color: var(--cyan); }
+.pink { color: var(--pink); }
+.green { color: var(--green); }
+.purple { color: var(--purple); }
+
+.bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #29213b;
+}
+
+.bar-fill {
+  width: 40%;
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 12px var(--cyan);
+  transition: width 0.5s ease;
+}
+
+.metric-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font: 10px monospace;
+}
+
+/* OPERATIONS AREA */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 16px;
+}
+
+.tools-panel {
+  padding: 20px;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 11px;
+}
+
+.tool {
+  min-height: 110px;
+  padding: 15px;
+  border: 1px solid #332747;
+  border-radius: 9px;
+  color: var(--white);
+  background: #0b0917;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition: 0.25s;
+}
+
+.tool:hover,
+.tool:focus-visible {
+  outline: none;
+  border-color: var(--cyan);
+  background: #15102a;
+  box-shadow: 0 0 22px #00f5ff22;
+  transform: translateY(-3px);
+}
+
+.tool-icon {
+  margin-bottom: 10px;
+  color: var(--cyan);
+  font-size: 25px;
+  text-shadow: 0 0 12px var(--cyan);
+}
+
+.tool-title {
+  font: 11px monospace;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.tool-description {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.network-panel,
+.terminal-panel {
+  padding: 20px;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font: 12px monospace;
+  letter-spacing: 1px;
+}
+
+.panel-heading small {
+  color: var(--green);
+  font-size: 10px;
+}
+
+#networkGraph {
+  display: block;
+  width: 100%;
+  height: 185px;
+  margin-top: 12px;
+}
+
+.node-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.node {
+  padding: 8px;
+  border: 1px solid #342847;
+  border-radius: 5px;
+  color: var(--muted);
+  font: 10px monospace;
+}
+
+.node::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.explanation {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.terminal-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font: 10px monospace;
+}
+
+.terminal-body {
+  min-height: 110px;
+  margin-top: 13px;
+  font: 11px/1.9 monospace;
+  overflow-wrap: anywhere;
+}
+
+.prompt {
+  color: var(--green);
+}
+
+.output {
+  color: #b8b0d4;
+}
+
+.cursor {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  background: var(--cyan);
+  vertical-align: middle;
+  animation: blink 0.8s infinite;
+}
+
+/* FOOTER */
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 38px 0 24px;
+  padding: 20px 0;
+  border-top: 1px solid #302447;
+  color: var(--muted);
+  font: 10px monospace;
+  letter-spacing: 1px;
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 20;
+  max-width: 340px;
+  padding: 16px;
+  border: 1px solid var(--cyan);
+  border-radius: 9px;
+  background: #100c20;
+  box-shadow: 0 0 25px #00f5ff33;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(15px);
+  pointer-events: none;
+  transition: 0.25s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ANIMATIONS */
+
+@keyframes neonFlicker {
+  0%, 100% {
+    filter: brightness(1);
+    text-shadow: 0 0 5px white, 0 0 15px var(--cyan),
+      0 0 35px var(--cyan), 0 0 75px #0077ff;
+  }
+  50% {
+    filter: brightness(1.2);
+    text-shadow: 0 0 8px white, 0 0 22px var(--cyan),
+      0 0 48px var(--cyan), 0 0 100px #a000ff;
+  }
+}
+
+@keyframes pinkPulse {
+  from { opacity: 0.35; }
+  to { opacity: 0.95; }
+}
+
+@keyframes bannerGlow {
+  from { transform: translateX(-4%); opacity: 0.5; }
+  to { transform: translateX(4%); opacity: 1; }
+}
+
+@keyframes logoPulse {
+  from { box-shadow: 0 0 10px #00f5ff33; }
+  to { box-shadow: 0 0 25px #00f5ff99, inset 0 0 15px #00f5ff33; }
+}
+
+@keyframes blink {
+  50% { opacity: 0.3; }
+}
+
+@keyframes linePulse {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 500px) {
+  .hero { padding-top: 48px; }
+  .hero h1 { letter-spacing: 0; }
+  .eyebrow { font-size: 10px; letter-spacing: 2px; }
+  .hero-description { font-size: 11px; letter-spacing: 1px; }
+  .metrics { gap: 9px; }
+  .metric { padding: 13px; }
+  .metric-value { font-size: 24px; }
+  .tool-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<canvas id="particles" aria-hidden="true"></canvas>
+<div class="scanlines" aria-hidden="true"></div>
+
+<header>
+  <div class="brand">
+    <div class="logo">G</div>
+    <div>
+      <div class="brand-name">GLASER OS</div>
+      <div class="brand-subtitle">NEON CYBER EDITION</div>
+    </div>
+  </div>
+  <div class="status">
+    <span class="status-dot"></span>INTERFACE ONLINE
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="eyebrow">◆ NEXT GENERATION CYBER PLATFORM ◆</div>
+    <h1>GLASER OS</h1>
+    <div class="hero-description">
+      YOUR SYSTEM. YOUR NETWORK. YOUR RULES.
+    </div>
+    <div class="banner-line"></div>
+    <div class="hero-info">
+      <div>EDITION: <strong>NEON CYBER</strong></div>
+      <div>VERSION: <strong>0.1</strong></div>
+      <div>MODE: <strong>DEVELOPMENT</strong></div>
+    </div>
+  </section>
+
+  <div class="section-title">
+    SYSTEM OVERVIEW <small>DEMO METRICS</small>
+  </div>
+
+  <section class="metrics">
+    <div class="panel metric">
+      <div class="metric-label">CPU LOAD</div>
+      <div class="metric-value cyan" id="cpu">24%</div>
+      <div class="bar">
+        <div class="bar-fill" id="cpuBar"></div>
+      </div>
+      <div class="metric-note">SIMULATED ACTIVITY</div>
+    </div>
+
+    <div class="panel metric">
+      <div class="metric-label">MEMORY USAGE</div>
+      <div class="metric-value pink" id="memory">48%</div>
+      <div class="bar">
+        <div class="bar-fill" id="memoryBar"
+          style="background:var(--pink);box-shadow:0 0 12px var(--pink)">
+        </div>
+      </div>
+      <div class="metric-note">SIMULATED ACTIVITY</div>
+    </div>
+
+    <div class="panel metric">
+      <div class="metric-label">NETWORK TRAFFIC</div>
+      <div class="metric-value green" id="traffic">1.8 MB/s</div>
+      <div class="bar">
+        <div class="bar-fill" id="trafficBar"
+          style="background:var(--green);box-shadow:0 0 12px var(--green)">
+        </div>
+      </div>
+      <div class="metric-note">DEMO DATA STREAM</div>
+    </div>
+
+    <div class="panel metric">
+      <div class="metric-label">SECURITY STATUS</div>
+      <div class="metric-value purple" style="font-size:23px">
+        STANDBY
+      </div>
+      <div class="bar">
+        <div class="bar-fill"
+          style="width:100%;background:var(--purple);box-shadow:0 0 12px var(--purple)">
+        </div>
+      </div>
+      <div class="metric-note">NO SCAN RUNNING</div>
+    </div>
+  </section>
+
+  <div class="section-title">
+    CYBER OPERATIONS <small>TOOL DECK</small>
+  </div>
+
+  <section class="layout">
+    <div class="panel tools-panel">
+      <div class="tool-grid">
+
+        <button class="tool" data-tool="Network Analyzer">
+          <div class="tool-icon">⌘</div>
+          <div class="tool-title">NETWORK ANALYZER</div>
+          <div class="tool-description">
+            Network monitoring and connection analysis
+          </div>
+        </button>
+
+        <button class="tool" data-tool="Security Lab">
+          <div class="tool-icon">⬡</div>
+          <div class="tool-title">SECURITY LAB</div>
+          <div class="tool-description">
+            Authorized security testing workspace
+          </div>
+        </button>
+
+        <button class="tool" data-tool="Packet Inspector">
+          <div class="tool-icon">⌁</div>
+          <div class="tool-title">PACKET INSPECTOR</div>
+          <div class="tool-description">
+            Packet analysis integration point
+          </div>
+        </button>
+
+        <button class="tool" data-tool="Digital Forensics">
+          <div class="tool-icon">◈</div>
+          <div class="tool-title">DIGITAL FORENSICS</div>
+          <div class="tool-description">
+            Digital evidence analysis workspace
+          </div>
+        </button>
+
+        <button class="tool" data-tool="Terminal">
+          <div class="tool-icon">&gt;_</div>
+          <div class="tool-title">TERMINAL</div>
+          <div class="tool-description">
+            Native command launcher integration point
+          </div>
+        </button>
+
+        <button class="tool" data-tool="GLASER Network">
+          <div class="tool-icon">◎</div>
+          <div class="tool-title">GLASER NETWORK</div>
+          <div class="tool-description">
+            Peer discovery and network development
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <div class="side-column">
+
+      <div class="panel network-panel">
+        <div class="panel-heading">
+          <span>NETWORK ACTIVITY</span>
+          <small><span class="status-dot"></span>DEMO STREAM</small>
+        </div>
+
+        <canvas id="networkGraph"></canvas>
+
+        <div class="node-list">
+          <div class="node">LOCAL NODE</div>
+          <div class="node">GATEWAY DEMO</div>
+          <div class="node">PEER NOT CONNECTED</div>
+        </div>
+
+        <div class="explanation">
+          Animated network visualization only. It does not scan devices
+          or connect to other computers. Real network monitoring will
+          require a native operating-system service.
+        </div>
+      </div>
+
+      <div class="panel terminal-panel">
+        <div class="terminal-top">
+          <span>GLASER // SYSTEM LOG</span>
+          <span id="clock">--:--:--</span>
+        </div>
+
+        <div class="terminal-body" id="logs">
+          <div class="prompt">glaser@neon:~$ boot-interface</div>
+          <div class="output">[OK] Neon interface loaded.</div>
+          <div class="output">[OK] Visual modules initialized.</div>
+          <div class="output">[INFO] Waiting for native integrations.</div>
+          <div>
+            <span class="prompt">glaser@neon:~$</span>
+            <span class="cursor"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <span>GLASER OS // NEON CYBER</span>
+    <span>BUILD 0.1 // INTERFACE PROTOTYPE</span>
+    <span>AUTHORIZED SECURITY WORK ONLY</span>
+  </footer>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Animated background particles */
+const particleCanvas = document.getElementById("particles");
+const particleContext = particleCanvas.getContext("2d");
+let particles = [];
+
+function resizeParticles() {
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+  particleCanvas.width = innerWidth * ratio;
+  particleCanvas.height = innerHeight * ratio;
+
+  particleContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  const count = Math.min(100, Math.floor(innerWidth / 12));
+
+  particles = Array.from({ length: count }, () => ({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    speed: 0.2 + Math.random() * 0.7,
+    size: 1 + Math.random() * 2,
+    hue: Math.random() > 0.5 ? 185 : 280
+  }));
+}
+
+function animateParticles() {
+  particleContext.clearRect(0, 0, innerWidth, innerHeight);
+
+  for (const p of particles) {
+    particleContext.fillStyle =
+      p.hue === 185 ? "#00f5ff" : "#a855ff";
+
+    particleContext.globalAlpha = 0.2 + Math.random() * 0.5;
+
+    particleContext.fillRect(p.x, p.y, p.size, p.size);
+
+    p.y += p.speed;
+    p.x += Math.sin(p.y * 0.01) * 0.15;
+
+    if (p.y > innerHeight) {
+      p.y = 0;
+      p.x = Math.random() * innerWidth;
+    }
+  }
+
+  particleContext.globalAlpha = 1;
+  requestAnimationFrame(animateParticles);
+}
+
+resizeParticles();
+window.addEventListener("resize", resizeParticles);
+animateParticles();
+
+/* Simulated dashboard readings — not real device telemetry */
+function updateMetrics() {
+  const cpu = 10 + Math.floor(Math.random() * 60);
+  const memory = 25 + Math.floor(Math.random() * 50);
+  const traffic = (0.4 + Math.random() * 5.5).toFixed(1);
+
+  document.getElementById("cpu").textContent = cpu + "%";
+  document.getElementById("memory").textContent = memory + "%";
+  document.getElementById("traffic").textContent = traffic + " MB/s";
+
+  document.getElementById("cpuBar").style.width = cpu + "%";
+  document.getElementById("memoryBar").style.width = memory + "%";
+  document.getElementById("trafficBar").style.width =
+    Math.min(100, Number(traffic) * 15) + "%";
+}
+
+updateMetrics();
+setInterval(updateMetrics, 1800);
+
+/* Animated network chart — illustrative data */
+const graph = document.getElementById("networkGraph");
+const graphContext = graph.getContext("2d");
+let graphPhase = 0;
+
+function animateNetwork() {
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  const width = graph.clientWidth;
+  const height = 185;
+
+  graph.width = Math.max(1, width * ratio);
+  graph.height = height * ratio;
+
+  graphContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+  graphContext.clearRect(0, 0, width, height);
+
+  graphContext.strokeStyle = "#29223d";
+  graphContext.lineWidth = 1;
+
+  for (let y = 20; y < height; y += 25) {
+    graphContext.beginPath();
+    graphContext.moveTo(0, y);
+    graphContext.lineTo(width, y);
+    graphContext.stroke();
+  }
+
+  const points = [];
+
+  for (let x = 0; x <= width; x += 4) {
+    const y = height * 0.52
+      + Math.sin(x * 0.035 + graphPhase) * 25
+      + Math.sin(x * 0.09 - graphPhase * 1.4) * 13;
+
+    points.push({ x, y });
+  }
+
+  graphContext.beginPath();
+
+  points.forEach((point, index) => {
+    if (index === 0) {
+      graphContext.moveTo(point.x, point.y);
+    } else {
+      graphContext.lineTo(point.x, point.y);
+    }
+  });
+
+  graphContext.strokeStyle = "#00f5ff";
+  graphContext.lineWidth = 2;
+  graphContext.shadowBlur = 12;
+  graphContext.shadowColor = "#00f5ff";
+  graphContext.stroke();
+  graphContext.shadowBlur = 0;
+
+  const position =
+    (Math.sin(graphPhase * 0.7) + 1) / 2 * (points.length - 1);
+
+  const point = points[Math.floor(position)];
+
+  if (point) {
+    graphContext.beginPath();
+    graphContext.arc(point.x, point.y, 4, 0, Math.PI * 2);
+    graphContext.fillStyle = "#ff00bf";
+    graphContext.shadowBlur = 15;
+    graphContext.shadowColor = "#ff00bf";
+    graphContext.fill();
+    graphContext.shadowBlur = 0;
+  }
+
+  graphPhase += 0.035;
+  requestAnimationFrame(animateNetwork);
+}
+
+animateNetwork();
+
+/* Clock */
+function updateClock() {
+  document.getElementById("clock").textContent =
+    new Date().toLocaleTimeString();
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+/* Interactive prototype tool buttons */
+let toastTimeout;
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimeout);
+
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3200);
+}
+
+document.querySelectorAll("[data-tool]").forEach(button => {
+  button.addEventListener("click", () => {
+    const name = button.dataset.tool;
+
+    showToast(
+      name + " is a placeholder. Its native tool integration " +
+      "has not been installed yet."
+    );
+
+    const logs = document.getElementById("logs");
+    const line = document.createElement("div");
+
+    line.className = "output";
+    line.textContent = "[INFO] Module requested: " + name;
+
+    logs.insertBefore(line, logs.lastElementChild);
+
+    while (logs.children.length > 8) {
+      logs.removeChild(logs.firstElementChild);
+    }
+  });
+});
+</script>
+
+</body>
+</html>
